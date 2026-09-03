@@ -1,0 +1,53 @@
+# Maven build output
+target/
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse / Spring Tool Suite
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# Visual Studio Code
+.vscode/
+
+# Java compiled files
+*.class
+
+# Logs
+*.log
+logs/
+
+# Environment and local configuration
+.env
+.env.*
+!.env.example
+
+# Local Spring Boot configuration
+application-local.properties
+application-local.yml
+application-dev.properties
+application-dev.yml
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Temporary and backup files
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
