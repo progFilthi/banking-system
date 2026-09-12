@@ -68,6 +68,10 @@ public class AccountService {
         );
     }
 
+    /*
+     *     GET account by account number
+    *
+    *  */
     public AccountResponse getAccount(String accountNumber){
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(()-> new RuntimeException("Account not found."));
@@ -76,6 +80,10 @@ public class AccountService {
         return mapToResponse(account);
     }
 
+
+    /*
+    * GET account balance by account number
+    * */
     public BigDecimal getBalance(String accountNumber){
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(()-> new RuntimeException("Account not found."));
@@ -84,8 +92,69 @@ public class AccountService {
         return account.getBalance();
     }
 
+
+    /* Block account - Called by fraud detection service. */
+    public void blockAccount(String accountNumber){
+        log.info("Blocking account for: {} ", accountNumber);
+
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(()-> new RuntimeException("Account not found."));
+
+        account.setAccountStatus(AccountStatus.BLOCKED);
+
+        accountRepository.save(account);
+    }
+
     /*
-    * Generate unique 12 digit account number
+    * Deduct Balance from sender
+    * Called by Transaction Service
+    * */
+    public void deductBalance(String accountNumber, BigDecimal balance){
+        log.info("Deducting balance {} from accoun {} ", balance, accountNumber);
+
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(()-> new RuntimeException("Account not found."));
+
+        if( account.getAccountStatus() != AccountStatus.ACTIVE ){
+            throw new RuntimeException("Account status not active for this account: " + accountNumber);
+        }
+
+        if( account.getBalance().compareTo(balance) < 0 ){
+            throw new RuntimeException("Sorry you have insufficient funds for this transaction: " + accountNumber);
+        }
+
+        account.setBalance(account.getBalance().subtract(balance));
+
+        accountRepository.save(account);
+
+        log.info("Balance updated. New Balance {} ", account.getBalance());
+
+    }
+
+    /*
+    * Credit Balance
+    * Called by Transaction Service via Kafka
+    * */
+    public void creditBalance(String accountNumber, BigDecimal balance){
+
+        log.info("Crediting balance {} from account {} ", balance, accountNumber);
+
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(()-> new RuntimeException("Account not found."));
+
+
+        account.setBalance(account.getBalance().add(balance));
+
+        accountRepository.save(account);
+
+        log.info("Account credited. New Balance {} ", account.getBalance());
+
+
+
+    }
+
+    /*
+    * Generate unique 12-digit account number
     * */
     private String generateAccountNumber(){
         String accountNumber;
